@@ -1,0 +1,32 @@
+﻿services:
+  app:
+    build: .
+    container_name: tutor-ai-app
+    environment:
+      DATABASE_URL: postgresql://tutor:${POSTGRES_PASSWORD:-change-me}@db:5432/tutor_ai
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    ports:
+      - "49200:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - tutor_uploads:/app/uploads
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: tutor-ai-db
+    environment:
+      POSTGRES_DB: tutor_ai
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - tutor_postgres:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor -d tutor_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  tutor_postgres:
+  tutor_uploads:

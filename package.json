@@ -1,0 +1,30 @@
+{
+  "name": "tutor-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "next": "14.2.30",
+    "openai": "^4.104.0",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.13.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "styled-jsx": "^5.1.7",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.4.3",
+    "@types/node": "^20.17.30",
+    "@types/pg": "^8.11.11",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.8.3"
+  }
+}
