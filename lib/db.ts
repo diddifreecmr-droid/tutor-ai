@@ -1,5 +1,19 @@
 ﻿import { Pool } from 'pg';
 
-const globalForDb = globalThis as unknown as { pool?: Pool };
+const globalForDb = globalThis as unknown as { pool?: Pool; schemaReady?: Promise<void> };
 export const pool = globalForDb.pool ?? new Pool({ connectionString: process.env.DATABASE_URL });
 if (process.env.NODE_ENV !== 'production') globalForDb.pool = pool;
+
+export function ensureSchema() {
+  if (!globalForDb.schemaReady) {
+    globalForDb.schemaReady = pool.query(`
+      create extension if not exists vector;
+      create extension if not exists pgcrypto;
+      create table if not exists workspaces (id uuid primary key default gen_random_uuid(), recovery_code_hash text not null unique, created_at timestamptz not null default now());
+      create table if not exists documents (id uuid primary key default gen_random_uuid(), workspace_id uuid not null references workspaces(id) on delete cascade, filename text not null, mime_type text not null, storage_path text not null, status text not null default 'uploaded', page_count integer, subject text, level text, series text, chapter text, created_at timestamptz not null default now());
+      create table if not exists document_pages (id uuid primary key default gen_random_uuid(), document_id uuid not null references documents(id) on delete cascade, page_number integer not null, ocr_text text not null default '', created_at timestamptz not null default now(), unique(document_id, page_number));
+      create table if not exists document_chunks (id uuid primary key default gen_random_uuid(), document_id uuid not null references documents(id) on delete cascade, page_id uuid references document_pages(id) on delete cascade, content text not null, embedding vector(1536), created_at timestamptz not null default now());
+    `).then(() => undefined);
+  }
+  return globalForDb.schemaReady;
+}

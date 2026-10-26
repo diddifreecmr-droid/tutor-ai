@@ -2,13 +2,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import pdf from 'pdf-parse';
-import { pool } from '@/lib/db';
+import { pool, ensureSchema } from '@/lib/db';
 import { extractImageText } from '@/lib/ai';
 
 const MAX_PAGES = 10;
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  await ensureSchema();
   const form = await request.formData();
   const workspaceId = String(form.get('workspaceId') ?? '');
   const files = form.getAll('files').filter((value): value is File => value instanceof File);
@@ -45,3 +46,4 @@ export async function POST(request: NextRequest) {
   }
   return NextResponse.json({ documents: created, pages, message: 'Documents enregistrés.' }, { status: 201 });
 }
+
