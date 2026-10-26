@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ChangeEvent, useState } from 'react';
 
@@ -42,8 +42,16 @@ export default function Home() {
     setMessage('Code copié. Gardez-le dans un endroit sûr.');
   }
 
-  function restore() {
-    setMessage(restoreCode.trim() ? 'La restauration par code sera activée dans la prochaine étape.' : 'Saisissez votre code de récupération.');
+  async function restore() {
+    if (!restoreCode.trim()) { setMessage('Saisissez votre code de récupération.'); return; }
+    setBusy(true); setMessage('Restauration de votre espace…');
+    try {
+      const response = await fetch('/api/workspaces', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recoveryCode: restoreCode.trim() }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Code de récupération invalide.');
+      setWorkspace(data.workspaceId); setRecovery(restoreCode.trim().toUpperCase()); setMessage('Espace restauré. Vos documents sont de nouveau accessibles.');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Restauration impossible.'); }
+    finally { setBusy(false); }
   }
 
   return <main className="shell">
