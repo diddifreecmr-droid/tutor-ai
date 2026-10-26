@@ -20,7 +20,6 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@next/swc-win32-x64-msvc": "^16.4.3",
     "@types/node": "^20.17.30",
     "@types/pg": "^8.11.11",
     "@types/react": "^18.3.18",
