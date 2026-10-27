@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
         const text = await extractImageText(item.buffer.toString('base64'), item.file.type);
         await pool.query('insert into document_pages (document_id, page_number, ocr_text) values ($1,1,$2)', [document.id, text ?? '']);
         status = text ? 'ocr_complete' : 'ocr_pending';
+      } else if (item.file.type.startsWith('image/') && !process.env.OPENROUTER_API_KEY) {
+        status = 'ocr_not_configured';
       } else if (item.file.type === 'application/pdf' && item.pdfText) {
         await pool.query('insert into document_pages (document_id, page_number, ocr_text) values ($1,1,$2)', [document.id, item.pdfText]);
         status = 'ocr_complete';
@@ -73,5 +75,5 @@ export async function POST(request: NextRequest) {
     document.status = status;
     created.push(document);
   }
-  return NextResponse.json({ documents: created, pages, message: 'Documents enregistrés.' }, { status: 201 });
+  return NextResponse.json({ documents: created, pages, message: 'Documents enregistrÃ©s.' }, { status: 201 });
 }

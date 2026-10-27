@@ -9,6 +9,7 @@ export async function POST(request: Request) {
     const workspaceId = body.workspaceId?.trim();
     const question = body.question?.trim();
     if (!workspaceId || !question) return NextResponse.json({ error: 'Workspace et question requis.' }, { status: 400 });
+    if (!process.env.OPENROUTER_API_KEY) return NextResponse.json({ error: 'OPENROUTER_API_KEY n’est pas configurée côté serveur.' }, { status: 503 });
     if (question.length > 2000) return NextResponse.json({ error: 'La question est trop longue.' }, { status: 413 });
 
     const result = await pool.query(`
@@ -18,13 +19,13 @@ export async function POST(request: Request) {
       order by d.created_at desc, p.page_number asc
       limit 40
     `, [workspaceId]);
-    if (!result.rowCount) return NextResponse.json({ error: 'Aucun texte OCR disponible. Importez d’abord un cours et vérifiez que l’OCR est terminé.' }, { status: 422 });
+    if (!result.rowCount) return NextResponse.json({ error: 'Aucun texte OCR disponible. Importez dâ€™abord un cours et vÃ©rifiez que lâ€™OCR est terminÃ©.' }, { status: 422 });
 
     const context = result.rows.map((row) => `[${row.filename}, page ${row.page_number}]\n${row.ocr_text}`).join('\n\n').slice(0, 30000);
     const answer = await answerTutorQuestion(question, context);
-    if (!answer) return NextResponse.json({ error: 'Le service IA n’est pas configuré. Ajoutez OPENROUTER_API_KEY côté serveur.' }, { status: 503 });
+    if (!answer) return NextResponse.json({ error: 'Le service IA nâ€™est pas configurÃ©. Ajoutez OPENROUTER_API_KEY cÃ´tÃ© serveur.' }, { status: 503 });
     return NextResponse.json({ answer, sources: result.rows.map((row) => ({ filename: row.filename, page: row.page_number })) });
   } catch {
-    return NextResponse.json({ error: 'Le tuteur est momentanément indisponible.' }, { status: 503 });
+    return NextResponse.json({ error: 'Le tuteur est momentanÃ©ment indisponible.' }, { status: 503 });
   }
 }
