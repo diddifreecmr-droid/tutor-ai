@@ -1,10 +1,12 @@
-﻿services:
+services:
   app:
     build: .
     container_name: tutor-ai-app
     environment:
       DATABASE_URL: postgresql://tutor:${POSTGRES_PASSWORD:-change-me}@db:5432/tutor_ai
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_OCR_MODEL: ${OPENROUTER_OCR_MODEL:-z-ai/glm-5.3-flash}
+      OPENROUTER_CHAT_MODEL: ${OPENROUTER_CHAT_MODEL:-z-ai/glm-5.3-flash}
     ports:
       - "49200:3000"
     depends_on:
